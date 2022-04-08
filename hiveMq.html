@@ -7,7 +7,7 @@
   </head>
 
   <body>
-  
+    <label id="resolution"></label><br>
     <Label >Status:</Label><Label id="connectStatus">Offline</Label><br>
     Subscribe to topic:presence <br>
     <input id="pub_msg">
@@ -19,6 +19,20 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
     <script type="text/javascript">
+      
+      var resolutionStr="Resolution information-<br>";
+      resolutionStr += "screen.width:" + screen.width +"<br>";
+      resolutionStr += "screen.Height:" + screen.height +"<br>";
+      resolutionStr += "screen.availWidth:" + screen.availWidth +"<br>";
+      resolutionStr += "screen.availHeight:" + screen.availHeight +"<br>";
+      resolutionStr += "screen.availTop:" + screen.availTop +"<br>";
+      resolutionStr += "screen.availLeft:" + screen.availLeft +"<br><hr>";
+      resolutionStr += "window.devicePixelRatio:" + window.devicePixelRatio +"<br>";
+      resolutionStr += "width x ratio:" + window.screen.width * window.devicePixelRatio +"<br>";
+      resolutionStr += "height x ratio:" + window.screen.height * window.devicePixelRatio +"<br>";
+    
+      
+      $("#resolution").html(resolutionStr);
 
       // Create a client instance
       //client = new Paho.MQTT.Client("host", port,"client_id");
