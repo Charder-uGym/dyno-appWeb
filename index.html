@@ -3,100 +3,128 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>Untitled Document</title>
+    <title>握力器</title>
+    <link rel="stylesheet" href="css/main.css">
   </head>
 
   <body>
-    <label id="resolution"></label><br>
-    <Label >Status:</Label><Label id="connectStatus">Offline</Label><br>
-    Subscribe to topic:presence <br>
-    <input id="pub_msg">
-    <button onclick="publish()">Publish to presence</button><br>
-    <br> presence messages<br>
-    <textarea id="messages" rows="10"></textarea>
-
-<!--    <script src="assets/js/jquery-3.5.0.min.js"></script>-->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>   
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
-    <script type="text/javascript">
-      
-      var resolutionStr="Resolution information-<br>";
-      resolutionStr += "screen.width:" + screen.width +"<br>";
-      resolutionStr += "screen.Height:" + screen.height +"<br>";
-      resolutionStr += "screen.availWidth:" + screen.availWidth +"<br>";
-      resolutionStr += "screen.availHeight:" + screen.availHeight +"<br>";
-      resolutionStr += "screen.availTop:" + screen.availTop +"<br>";
-      resolutionStr += "screen.availLeft:" + screen.availLeft +"<br><hr>";
-      resolutionStr += "window.devicePixelRatio:" + window.devicePixelRatio +"<br>";
-      resolutionStr += "width x ratio:" + window.screen.width * window.devicePixelRatio +"<br>";
-      resolutionStr += "height x ratio:" + window.screen.height * window.devicePixelRatio +"<br>";
     
+    <script src="js/jquery-3.5.0.min.js"></script>
+             
+<!--
+    <div id="status" style="text-align:center; margin-top:10px; color:darkblue; font-weight:bold; font-size:24px; font-family: Arial, Helvetica, sans-serif;">
+      握力器 已連線
+    </div>         
+-->
+    <img src="金機.png" style="width:300px; margin:20px">
+    <img onclick="set_settings()" src="gear_icon.png" style="width:50px; float:right; margin-right:50px; margin-top:20px">
+            
+    <div id="intro" style="margin-top:-120px">
+      <div style="float:left; width:20%;text-align: center; margin-top:100px; margin-left:30px; ">
+
+        <div style="font-size:22px;font-weight:bold; padding:20px; border-radius:5px; background-color:#55555555; border-radius:10px">
+          請聯絡管理人員了解如何加入 LINE 群組
+        </div>
+      </div>
+
+      <div style="height:90%; float:left; width:26%; margin-left:4%; margin-top:50px">      
+        <div style="font-size:24px; font-weight:bold">
+        <img src="step1.png" style="width:30px">
+        請打開 LINE 群組，點擊 量測握力，再打開除傳回的網址，進入下一步</div><br>
+        <img src="linebot.png" style="width:400px; ">
+      </div>
+
+      <div style="height:90%; float:left; width:26%;; margin-top:50px">      
+        <div style="margin-left:5%; font-size:24px; font-weight:bold">
+        <img src="step2.png" style="width:30px">
+        點擊 進行量測 就會傳送量測要求給握力器</div><br>
+        <img src="webapp.png" style="width:400px; margin-left:5%">
+      </div>  
+    </div>        
+       
+    <div id="request" style="text-align:center; font-size:24px; font-family: Arial, Helvetica, sans-serif; display:none; align-items:center; display:none">
+
+      <img src="https://profile.line-scdn.net/0m00af3784725150d454061f6166cf75d95eb255c87861" style="width:300px; border-radius:50%"><br><br>
       
-      $("#resolution").html(resolutionStr);
-
-      // Create a client instance
-      //client = new Paho.MQTT.Client("host", port,"client_id");
-      //Example client = new Paho.MQTT.Client("m11.cloudmqtt.com", 32903, "web_" + parseInt(Math.random() * 100, 10));
-      //client = new Paho.MQTT.Client("driver.cloudmqtt.com", 38578, "web_" + parseInt(Math.random() * 100, 10));
-      client = new Paho.MQTT.Client("3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud", 8884, "web_" + parseInt(Math.random() * 100, 10));
-
-      // set callback handlers
-      client.onConnectionLost = onConnectionLost;
-      client.onMessageArrived = onMessageArrived;
-      var options = {
-        useSSL: true,
-//        userName: "nbitjbzu",
-//        password: "DxYegPp9xHAY",
-        userName: "ugym-devices",
-        password: "Ab-123456",        
-        onSuccess:onConnect,
-        onFailure:doFail
-      }
-
-      // connect the client
-      client.connect(options);
-
-      // called when the client connects
-      function onConnect() {
-        // Once a connection has been made, make a subscription and send a message.
-        console.log("onConnect");
-        $("#connectStatus").text("Connnected")
+      <label>客戶暱稱: Paul Kang</label><br>
+      <label>客戶電話: 0955039022</label><br>
+      <br><br>
+      
+      <button onclick="開始量測()" style="padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+        開始量測
+      </button>
+ 
+    </div>      
+     
+     
+    <div id="measureRight" style="margin-top:-120px; display:none">
+      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:200px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold">
+          右手握力數值
+        </div><br>
+        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div>
         
-        client.subscribe("presence");
+        <button onclick="量測左手()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+          左手量測
+        </button>
         
-        var message;
-        message = new Paho.MQTT.Message("Hello HiveMQ Cloud!");
-        message.destinationName = "presence";
-        client.send(message);
-      }
+      </div>
 
-      function doFail(e){
-        console.log(e);
-      }
+      <div style="height:90%; float:left; width:26%;; margin-top:50px">      
+        <div style="margin-left:5%; font-size:24px; font-weight:bold">
+          請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊握力欄。可重複量測，滿意後，點擊 請改換左手測量 按鈕進行左手握力量測
+        </div><br>
+        <img src="MeasureRightHand.png" style="width:400px; margin-left:5%">
+        
+      </div>  
+    </div>        
+         
+    <div id="measureLeft" style="margin-top:-120px; display:none">
+      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:50px">      
+        <div style="font-size:24px; font-weight:bold">
+          請量測左手握力，用力按壓後，&nbsp 放開後會嗶一聲，握力值會顯示在右邊握力欄。可重複量測，滿意後，請點擊 上傳握力量測資料 按鈕完成量測
+        </div><br>
+        <img src="MeasureLeftHand.png" style="width:400px; ">
+      </div>
 
-      // called when the client loses its connection
-      function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log("onConnectionLost:"+responseObject.errorMessage);
-        }
+      <div style="height:90%; float:left; width:26%; margin-left:%; margin-top:200px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold">
+          左手握力數值
+        </div><br>
+        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div>
+        
+        <button onclick="量測左手()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+          上傳量測數值
+        </button>
+        
+      </div>  
+    </div>                     
+       
+       
+    <script>
+      function set_settings(){
+        // 先拿來做進行量測
+        
+        $("#intro").hide();;
+        $("#request").show();
+        $("#status").text("客戶 Paul Kang 要求量測");
       }
-
-      // called when a message arrives
-      function onMessageArrived(message) {
-        console.log("onMessageArrived:"+message.payloadString);
-        var msgs = $("#messages").text();
-        $("#messages").text(msgs+"\n"+message.payloadString);
+      
+      function 開始量測(){
+        $("#request").hide();
+        $("#measureRight").show();
+        $("#status").text("進行右手握力量測");
+      }
+      
+      function 量測左手(){
+        $("#measureRight").hide();
+        $("#measureLeft").show();
+        $("#status").text("進行左手握力量測");        
       }
       
       
-      function publish(){
-        var message;
-        message = new Paho.MQTT.Message($("#pub_msg").val());
-        message.destinationName = "presence";
-        client.send(message);      
-      }
-    </script>    
-
+    </script>
+    
   </body>
 
 </html>
