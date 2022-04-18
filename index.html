@@ -1,4 +1,27 @@
 <!doctype html>
+<!-- HiVEMQ
+https://websocketclient.hivemq.cloud/?username=ugym-devices&host=3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud&port=8884
+
+-------------------------------
+Topic:
+00:11:22:33:44:55/cmd
+
+Message:
+{"cmd":"要求量測", "name":"Paul Kang", "pic":"https://profile.line-scdn.net/0m00af3784725150d454061f6166cf75d95eb255c87861", "phone":"0955039022"}
+------------------------------------
+Topic:
+00:11:22:33:44:55/ble
+
+Message:
+{"ble_online":true}
+------------------------------------
+Topic:
+00:11:22:33:44:55/dyna_data
+
+Message:
+{"measurement":32.2}
+------------------------------------
+-->
 <html lang="en">
 
   <head>
@@ -10,6 +33,7 @@
   <body>
     
     <script src="js/jquery-3.5.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>            
              
 <!--
     <div id="status" style="text-align:center; margin-top:10px; color:darkblue; font-weight:bold; font-size:24px; font-family: Arial, Helvetica, sans-serif;">
@@ -18,8 +42,9 @@
 -->
     <img src="金機.png" style="width:300px; margin:20px">
     <img onclick="set_settings()" src="gear_icon.png" style="width:50px; float:right; margin-right:50px; margin-top:20px">
+    <img id="spkr_icon" onclick="toggle_beep()" src="spkr_off.png" style="width:50px; float:right; margin-right:10px; margin-top:23px">
             
-    <div id="intro" style="margin-top:-120px">
+    <div id="intro" class="content" style="margin-top:-120px">
       <div style="float:left; width:20%;text-align: center; margin-top:100px; margin-left:30px; ">
 
         <div style="font-size:22px;font-weight:bold; padding:20px; border-radius:5px; background-color:#55555555; border-radius:10px">
@@ -30,96 +55,289 @@
       <div style="height:90%; float:left; width:26%; margin-left:4%; margin-top:50px">      
         <div style="font-size:24px; font-weight:bold">
         <img src="step1.png" style="width:30px">
-        請打開 LINE 群組，點擊 量測握力，再打開除傳回的網址，進入下一步</div><br>
+        請打開 LINE 群組，點擊 量測握力，再打開除傳回的網址，進入下一步  ,
+        </div><br>
         <img src="linebot.png" style="width:400px; ">
       </div>
 
       <div style="height:90%; float:left; width:26%;; margin-top:50px">      
         <div style="margin-left:5%; font-size:24px; font-weight:bold">
         <img src="step2.png" style="width:30px">
-        點擊 進行量測 就會傳送量測要求給握力器</div><br>
+          點擊手機畫面的 進行量測 傳送量測要求給握力器，然後使用握力器量測，</div><br>
         <img src="webapp.png" style="width:400px; margin-left:5%">
       </div>  
     </div>        
        
-    <div id="request" style="text-align:center; font-size:24px; font-family: Arial, Helvetica, sans-serif; display:none; align-items:center; display:none">
+    <div id="request" class="content" style="text-align:center; font-size:24px; font-family: Arial, Helvetica, sans-serif; display:none; align-items:center; display:none">
 
-      <img src="https://profile.line-scdn.net/0m00af3784725150d454061f6166cf75d95eb255c87861" style="width:300px; border-radius:50%"><br><br>
+      <img id="user_pic" src="" style="width:300px; border-radius:50%"><br><br>
       
-      <label>客戶暱稱: Paul Kang</label><br>
-      <label>客戶電話: 0955039022</label><br>
+      <label id="user_name" ></label><br>
+      <label id="user_phone"></label><br>
       <br><br>
       
       <button onclick="開始量測()" style="padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
         開始量測
       </button>
+      <br><br>
+      <button onclick="取消量測()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray; border:none; font-size:24px" >
+        取消量測
+      </button>      
  
     </div>      
-     
-     
-    <div id="measureRight" style="margin-top:-120px; display:none">
+          
+    <div id="measureRight" class="content" style="margin-top:-120px; display:none">
       <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:200px; text-align:center">      
         <div style="font-size:24px; font-weight:bold">
           右手握力數值
         </div><br>
-        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div>
+        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>
+        
+        <div style="font-size:24px; font-weight:bold">滿意數值後，改用</div>
         
         <button onclick="量測左手()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
           左手量測
-        </button>
+        </button><br><br>
+        
+        <button onclick="取消量測()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray; border:none; font-size:24px" >
+          取消量測
+        </button>         
         
       </div>
 
       <div style="height:90%; float:left; width:26%;; margin-top:50px">      
         <div style="margin-left:5%; font-size:24px; font-weight:bold">
-          請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊握力欄。可重複量測，滿意後，點擊 請改換左手測量 按鈕進行左手握力量測
+          請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊 右手握力數值 欄。可重複量測，
         </div><br>
         <img src="MeasureRightHand.png" style="width:400px; margin-left:5%">
         
       </div>  
     </div>        
          
-    <div id="measureLeft" style="margin-top:-120px; display:none">
-      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:50px">      
+    <div id="measureLeft" class="content" style="margin-top:-120px; display:none">
+      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:85px">      
         <div style="font-size:24px; font-weight:bold">
-          請量測左手握力，用力按壓後，&nbsp 放開後會嗶一聲，握力值會顯示在右邊握力欄。可重複量測，滿意後，請點擊 上傳握力量測資料 按鈕完成量測
+          請量測左手握力，用力按壓後，&nbsp 放開後會嗶一聲，握力值會顯示在右邊 左手握力數值 欄。可重複量測，
         </div><br>
-        <img src="MeasureLeftHand.png" style="width:400px; ">
+        <img src="MeasureLeftHand.png" style="width:400px;">
       </div>
 
-      <div style="height:90%; float:left; width:26%; margin-left:%; margin-top:200px; text-align:center">      
+      <div style="height:90%; float:left; width:26%; margin-left:%; margin-top:50px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold">
+          已量得右手握力數值
+        </div><br>
+        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>
+        
         <div style="font-size:24px; font-weight:bold">
           左手握力數值
         </div><br>
-        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div>
+        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>        
         
-        <button onclick="量測左手()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+        <div style="font-size:24px; font-weight:bold">滿意數值後</div>
+                
+        <button onclick="上傳量測()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
           上傳量測數值
         </button>
+        <br><br><br>
         
+        <div style="font-size:24px; font-weight:bold">或是</div>
+        
+        <button onclick="開始量測()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+          重新量測
+        </button>
+          
+        <span style="font-size:24px; font-weight:bold; margin-left:20px; margin-right:20px">或</span>                      
+        <button onclick="取消量測()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray; border:none; font-size:24px" >
+          放棄量測
+        </button>  
+                                                      
       </div>  
     </div>                     
        
        
     <script>
+      
+      var current_state=0; //0:intro;
+                           //1:要求量測
+                           //2:量測右手
+                           //3:量測左手
+                           //4:藍芽斷線，states.splice[-1,1]
+
+      var beep_enable=false;  
+      var mqtt_connected=false;      
+      var states=['idle', '要求量測','右手量測','左手量測', '藍芽斷線'];
+      //setInterval( ()=>{publish_state();}, 5000);      
+      
+      //"3a8.....cloud" 要改為從 Firebase 取得 
+      client = new Paho.MQTT.Client("3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud", 8884, "web_" + parseInt(Math.random() * 100, 10));
+
+      // set callback handlers
+      client.onConnectionLost = onConnectionLost;
+      client.onMessageArrived = onMessageArrived;
+      var options = { //要改為從 Firebase 取得
+        useSSL: true,
+        userName: "ugym-devices",
+        password: "Ab-123456",        
+        onSuccess:onConnect,
+        onFailure:doFail
+      }
+
+      // connect the client
+      client.connect(options);      
+      
       function set_settings(){
-        // 先拿來做進行量測
+        //設定 mac address, mqtt server, 存在 local storage
+        //localStorage.setItem('key', 'value')
+        //localStorage.getItem('key')
+        //localStorage.removeItem('key')
+        //localStorage.clear()
         
-        $("#intro").hide();;
-        $("#request").show();
-        $("#status").text("客戶 Paul Kang 要求量測");
+      }
+      
+      function 要求量測(user_info) {    
+        
+        current_state=1;
+        
+        if (confirm(user_info.name + " 要求握力量測!\n\n如果名字跟您不符，請取消量測\n重新再從 手機 點擊 進行量測!")){
+          $(".content").hide()
+          $("#user_name").text("暱稱: "+user_info.name);
+          $("#user_phone").text("電話: "+user_info.phone);
+          $("#user_pic").attr('src', user_info.pic);
+          $("#request").show();  
+
+          beep(); // depends on beep_enable
+        } else {
+          $("#user_name").text("");
+          $("#user_phone").text("");
+          $("#user_pic").attr('src', "");    
+          current_state=0;
+          beep(); // depends on beep_enable
+        }
+      }
+      
+      function 取消量測(){
+        //window.location.href = window.location.href;
+        
+        current_state=0;
+        $(".content").hide();
+        $("#intro").show();
+        
+        beep(); // depends on beep_enable
+        
       }
       
       function 開始量測(){
-        $("#request").hide();
+        $(".content").hide();
+
         $("#measureRight").show();
         $("#status").text("進行右手握力量測");
+        
+        beep(); // depends on beep_enable      
       }
       
       function 量測左手(){
-        $("#measureRight").hide();
+        $(".content").hide()
+
         $("#measureLeft").show();
-        $("#status").text("進行左手握力量測");        
+        $("#status").text("進行左手握力量測");   
+        
+        beep(); // depends on beep_enable
+      }
+      
+      // called when the client connects
+      function onConnect() {
+        // Once a connection has been made, make a subscription and send a message.
+        console.log("onConnect");
+        mqtt_connected=true;
+        
+        client.subscribe("00:11:22:33:44:55/#"); //模擬 mac address
+        
+        publish_state();
+      }
+
+      function doFail(e){
+        console.log(e);
+      }
+
+      // called when the client loses its connection
+      function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log("onConnectionLost:"+responseObject.errorMessage);
+          mqtt_connected=false;
+        }
+      }
+
+      // called when a message arrives
+      function onMessageArrived(message) {
+        console.log("onMessageArrived:");
+        
+        var topic=message.destinationName.split('/');
+        var sn         = topic[0];
+        var cmd_status = topic[1];
+        
+        switch(cmd_status) {
+            case "cmd":
+              var user_info=JSON.parse(message.payloadString);
+              console.log(user_info);
+              if (user_info.cmd=="要求量測" && current_state==0) 要求量測(user_info); 
+              break;
+          case "ble":
+              var ble=JSON.parse(message.payloadString);
+              console.log(ble);
+              //ble.online true/false 代表 ESP32 有無連上握力器的 BLE
+              break;
+          case "dyna_data":
+              var dyna_data=JSON.parse(message.payloadString);
+              console.log(dyna_data);
+              //dyna_data.measurement string 代表 握力器 傳來的測量值
+              break;            
+          default:
+            console.log("invalid cmd or status")
+        }
+//        if (cmd_status=="cmd"){
+//          var user_info=JSON.parse(message.payloadString);
+//          console.log(user_info);
+//          
+//          if (user_info.cmd=="要求量測" && current_state==0) 要求量測(user_info);
+//          
+//        }
+        
+
+      }
+      
+      function publish_state(){
+        var message; 
+        
+        if (mqtt_connected){
+          message = new Paho.MQTT.Message('{"status":"'+states[current_state]+'", "time_stamp":"'+Date.now().toString()+'"}');
+          message.destinationName = "00:11:22:33:44:55/status";
+          message.qos=0; //不見得要 1, 0 應該也可以
+          client.send(message);
+        }
+      }
+      
+      function publish(pub_msg){
+        var message;
+        message = new Paho.MQTT.Message(pub_msg);
+        message.destinationName = "presence";
+        client.send(message);      
+      }      
+      
+      function beep() {
+        if(beep_enable) {
+          var snd = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");  
+          snd.play();
+        }
+      }
+
+      function toggle_beep(){
+        if (beep_enable==false){
+          beep_enable=true;
+          $("#spkr_icon").attr("src", "spkr_on.png");
+        }else {
+          beep_enable=false;
+          $("#spkr_icon").attr("src", "spkr_off.png");          
+        }
       }
       
       
