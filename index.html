@@ -91,7 +91,7 @@ Message:
         <div style="font-size:24px; font-weight:bold">
           右手握力數值
         </div><br>
-        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>
+        <div id="measureRightHand" style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>
         
         <div style="font-size:24px; font-weight:bold">滿意數值後，改用</div>
         
@@ -131,7 +131,7 @@ Message:
         <div style="font-size:24px; font-weight:bold">
           左手握力數值
         </div><br>
-        <div style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>        
+        <div id="measureLeftHand" style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">999.9<span style="font-family:Helvetica; font-weight:normal; font-size:40px"> kg</span></div><br><br>        
         
         <div style="font-size:24px; font-weight:bold">滿意數值後</div>
                 
@@ -276,7 +276,7 @@ Message:
         var cmd_status = topic[1];
         
         switch(cmd_status) {
-            case "cmd":
+          case "cmd":
               var user_info=JSON.parse(message.payloadString);
               console.log(user_info);
               if (user_info.cmd=="要求量測" && current_state==0) 要求量測(user_info); 
@@ -292,7 +292,7 @@ Message:
               //dyna_data.measurement string 代表 握力器 傳來的測量值
               break;            
           default:
-            console.log("invalid cmd or status")
+            console.log(cmd_status)
         }
 //        if (cmd_status=="cmd"){
 //          var user_info=JSON.parse(message.payloadString);
@@ -340,6 +340,10 @@ Message:
         }
       }
       
+      function flash_reading(){
+        $("#measureRightHand").css("background-color", "black"); 
+        setTimeout(()=>{$("#measureRightHand").css("background-color", "antiquewhite")},500);
+      }
       
     </script>
     
