@@ -41,15 +41,64 @@ Message:
     </div>         
 -->
     <img src="金機.png" style="width:300px; margin:20px">
-    <img onclick="set_settings()" src="gear_icon.png" style="width:50px; float:right; margin-right:50px; margin-top:20px">
+      
+    <img id="gear_icon" onclick="set_settings()" src="gear_icon.png" style="width:50px; float:right; margin-right:50px; margin-top:20px">
     <img id="spkr_icon" onclick="toggle_beep()" src="spkr_off.png" style="width:50px; float:right; margin-right:10px; margin-top:23px">
+    <img id="spkr_icon" onclick="location.reload()" src="refresh.png" style="width:50px; float:right; margin-right:10px; margin-top:23px">          
+           
+    <div id="settings" style="float:right; background-color:white; border-radius:10px; margin-top:80px; margin-right:-160px; padding: 10px; display:none">
+        <p style="font-family:sans-serif; font-size:20px">藍芽連線裝置:</p>
+        <input id="bleAddr_input" style="width:230px; font-size:24px; padding:5px; margin-top:10px" placeholder="XX:XX:XX:XX:XX:XX">
+        <br><br>
+        <button onclick="設定bleAddr()" style="padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:20px; margin-left:10px" >
+          確定
+        </button>
+        <button onclick="取消設定()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray
+         ; border:none; font-size:20px; float:right; margin-right:20px" >
+          取消
+        </button>        
+    </div>            
             
+
+    <div id="msgDialog" style=" position: absolute; left: 50%; top:0; transform:translate(-50%, 0%); background-color:white; border-radius:10px; padding: 30px; font-size:24px; display:none">
+      <div id="握力器尚未設定msg">
+        握力器尚未設定連接位址，請先點擊右上角的  
+        <img src="gear_icon.png" style="float:right; width:30px;"><br>
+        進行設定。
+      </div>
+    </div>
+             
     <div id="intro" class="content" style="margin-top:-120px">
       <div style="float:left; width:20%;text-align: center; margin-top:100px; margin-left:30px; ">
 
         <div style="font-size:22px;font-weight:bold; padding:20px; border-radius:5px; background-color:#55555555; border-radius:10px">
           請聯絡管理人員了解如何加入 LINE 群組
         </div>
+        <div style="text-align:left; margin-left:10px; margin-top:20px; font-size:20px">
+          <div>握力控制盒位址: </div>   
+          <label id="bleaddr_status" style="float:right; margin-top:-30px; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px">
+            未設定
+          </label><br>
+          
+          <div>握力控制盒連線: </div> 
+          <label id="dyno_status" style="float:right; margin-top:-30px; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px">
+            未連線
+          </label><br>
+                    
+          <div>網際網路連線: </div> 
+          <label id="internet_status" style="float:right; margin-top:-30px; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px">
+            未連線
+          </label><br>
+          
+          <div>資料庫連線:</div>
+          <label id="mqtt_status" style="float:right; margin-top:-30px; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px">
+            未連線
+          </label><br>
+          
+          <button id="檢查連線按鈕" onclick="檢查連線()" style="font-size:20px; float:right; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px; border:none; display:none">
+            檢查連線
+          </button>             
+        </div>    
       </div>
 
       <div style="height:90%; float:left; width:26%; margin-left:4%; margin-top:50px">      
@@ -70,7 +119,7 @@ Message:
        
     <div id="request" class="content" style="text-align:center; font-size:24px; font-family: Arial, Helvetica, sans-serif; display:none; align-items:center; display:none">
 
-      <img id="user_pic" src="" style="width:300px; border-radius:50%"><br><br>
+      <img id="user_pic" src="./user_blank.png" style="width:300px; height:300px; border-radius:50%" onerror="this.src='./user_blank.png';"/><br><br>
       
       <label id="user_name" ></label><br>
       <label id="user_phone"></label><br>
@@ -156,24 +205,53 @@ Message:
        
        
     <script>
+      var app_status={
+        "bleAddrSet": true,
+        "internetOnline": false,
+        "mqttOnline": false,
+        "dynoOnline": false
+      };
+    
+      // read ble address
+      var bleAddr=localStorage.getItem('bleAddr');
+      console.log(bleAddr);
+      if (bleAddr==null){
+        $("#msgDialog").show();
+        app_status.bleAddrSet=false;
+        $("#bleaddr_status").text("未設定");
+      } else {
+        app_status.bleAddrSet=true;
+        $("#bleAddr_input").val(bleAddr);
+        
+        $("#bleaddr_status").text(bleAddr);        
+        $("#bleaddr_status").css("color", "black");        
+        $("#bleaddr_status").css("background-color", "transparent");        
+      }
       
-      var current_state=0; //0:intro;
-                           //1:要求量測
-                           //2:量測右手
-                           //3:量測左手
-                           //4:藍芽斷線，states.splice[-1,1]
+      //check internet online
+      checkInternet();
+      
+      var current_state=-3;//-3:MQTT未連線
+                           //-2:網路未連線
+                           //-1:藍芽裝置未上線
+                           // 0:intro;
+                           // 1:要求量測
+                           // 2:量測右手
+                           // 3:量測左手
+                           // 4:藍芽斷線，states.splice[-1,1]
+      
 
-      var beep_enable=false;  
-      var mqtt_connected=false;      
+
+      var beep_enable=false;      
       var states=['idle', '要求量測','右手量測','左手量測', '藍芽斷線'];
       //setInterval( ()=>{publish_state();}, 5000);      
       
       //"3a8.....cloud" 要改為從 Firebase 取得 
-      client = new Paho.MQTT.Client("3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud", 8884, "web_" + parseInt(Math.random() * 100, 10));
+      var mqtt_client = new Paho.MQTT.Client("3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud", 8884, "web_" + parseInt(Math.random() * 100, 10));
 
       // set callback handlers
-      client.onConnectionLost = onConnectionLost;
-      client.onMessageArrived = onMessageArrived;
+      mqtt_client.onConnectionLost = onConnectionLost;
+      mqtt_client.onMessageArrived = onMessageArrived;
       var options = { //要改為從 Firebase 取得
         useSSL: true,
         userName: "ugym-devices",
@@ -182,19 +260,21 @@ Message:
         onFailure:doFail
       }
 
-      // connect the client
-      client.connect(options);      
+      // connect the mqtt_client
+      mqtt_client.connect(options);      
       
       function set_settings(){
-        //設定 mac address, mqtt server, 存在 local storage
-        //localStorage.setItem('key', 'value')
-        //localStorage.getItem('key')
-        //localStorage.removeItem('key')
-        //localStorage.clear()
+
+        $("#bleAddr_input").val(bleAddr); 
+        
+        $("#msgDialog").hide();
+        $("#settings").show();
+        
         
       }
       
       function 要求量測(user_info) {    
+        $("#gear_icon").hide();
         
         current_state=1;
         
@@ -217,18 +297,18 @@ Message:
       
       function 取消量測(){
         //window.location.href = window.location.href;
-        
+        console.log("aaaa");
         current_state=0;
         $(".content").hide();
         $("#intro").show();
-        
+        $("#gear_icon").show()        
         beep(); // depends on beep_enable
         
       }
       
       function 開始量測(){
         $(".content").hide();
-
+        
         $("#measureRight").show();
         $("#status").text("進行右手握力量測");
         
@@ -244,26 +324,39 @@ Message:
         beep(); // depends on beep_enable
       }
       
-      // called when the client connects
+      // called when the mqtt_client connects
       function onConnect() {
         // Once a connection has been made, make a subscription and send a message.
-        console.log("onConnect");
-        mqtt_connected=true;
+        console.log("MQTT onConnect");
+        app_status.mqttOnline=true;
+        $("#mqtt_status").text("已連線");               
+        $("#mqtt_status").css("background-color", "green");           
         
-        client.subscribe("00:11:22:33:44:55/#"); //模擬 mac address
+        $("#檢查連線按鈕").hide();
         
-        publish_state();
+        if ($("#bleAddr_input").val() !=""){
+          mqtt_client.subscribe($("#bleAddr_input").val()+"/#"); //模擬 mac address
+          publish_state();
+        } else {
+          console.log("BLE ADDR is not valid");
+        }
       }
 
       function doFail(e){
         console.log(e);
+        console.log("請確認網路是否可連上網際網路");
+        
       }
 
-      // called when the client loses its connection
+      // called when the mqtt_client loses its connection
       function onConnectionLost(responseObject) {
         if (responseObject.errorCode !== 0) {
           console.log("onConnectionLost:"+responseObject.errorMessage);
-          mqtt_connected=false;
+          app_status.mqttOnline=false;
+          $("#mqtt_status").text("未連線");               
+          $("#mqtt_status").css("background-color", "red"); 
+          
+          checkInternet();
         }
       }
 
@@ -276,10 +369,29 @@ Message:
         var cmd_status = topic[1];
         
         switch(cmd_status) {
+          case "dyno_online":
+              var online_info=JSON.parse(message.payloadString);
+              console.log(online_info);                            
+              app_status.dynoOnline=true;
+              $("#dyno_status").text("已連線");               
+              $("#dyno_status").css("background-color", "green");  
+              current_state=0; // ready
+              break;    
+          case "dyno_offline":
+              var online_info=JSON.parse(message.payloadString);
+              console.log(online_info);                            
+              app_status.dynoOnline=false;
+              $("#dyno_status").text("未連線");               
+              $("#dyno_status").css("background-color", "red");   
+              current_state=-2;
+              break;            
           case "cmd":
               var user_info=JSON.parse(message.payloadString);
               console.log(user_info);
-              if (user_info.cmd=="要求量測" && current_state==0) 要求量測(user_info); 
+              if (user_info.cmd=="要求量測" && current_state==0) 
+                要求量測(user_info); 
+              else
+                alert("有量測要求，但有連線問題，請查看左欄連線資訊，修正問題");
               break;
           case "ble":
               var ble=JSON.parse(message.payloadString);
@@ -292,7 +404,7 @@ Message:
               //dyna_data.measurement string 代表 握力器 傳來的測量值
               break;            
           default:
-            console.log(cmd_status)
+            console.log("unknow cmd/status:", cmd_status)
         }
 //        if (cmd_status=="cmd"){
 //          var user_info=JSON.parse(message.payloadString);
@@ -308,11 +420,11 @@ Message:
       function publish_state(){
         var message; 
         
-        if (mqtt_connected){
+        if (app_status.mqttOnline){
           message = new Paho.MQTT.Message('{"status":"'+states[current_state]+'", "time_stamp":"'+Date.now().toString()+'"}');
           message.destinationName = "00:11:22:33:44:55/status";
           message.qos=0; //不見得要 1, 0 應該也可以
-          client.send(message);
+          mqtt_client.send(message);
         }
       }
       
@@ -320,8 +432,54 @@ Message:
         var message;
         message = new Paho.MQTT.Message(pub_msg);
         message.destinationName = "presence";
-        client.send(message);      
+        mqtt_client.send(message);      
       }      
+      
+
+      async function checkInternet(){
+        await fetch('https://jsonplaceholder.typicode.com/todos/1')
+        .then(response => response.json())
+        .then((json) => {
+          //console.log(json);
+          console.log("Internet Online");
+          app_status.internetOnline=true;
+        })
+        .catch((error)=>{
+          console.log('There has been a problem with your fetch operation: ', error.message);
+          app_status.internetOnline=false;
+         })     
+        
+        if (app_status.internetOnline){
+          $("#internet_status").text("已連線");               
+          $("#internet_status").css("background-color", "green");   
+        } else {
+          $("#internet_status").text("未連線");               
+          $("#internet_status").css("background-color", "red"); 
+          $("#檢查連線按鈕").show();
+        }
+      }
+       
+      async function 檢查連線(){
+        location.reload(); //reset
+      }
+
+      function 設定bleAddr(){
+        var bleAddrInput=$("#bleAddr_input").val();
+        console.log(bleAddrInput);
+        
+        var mac_addr_reg= new RegExp(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/);
+
+        if ((bleAddrInput=="") || !(mac_addr_reg.test(bleAddrInput))) {
+          alert("不得為空白 或 格式不對，請重新輸入");
+        } else {
+          localStorage.setItem('bleAddr', bleAddrInput);
+          location.reload();
+        }
+      }
+      
+      function 取消設定(){
+        $("#settings").hide();
+      }
       
       function beep() {
         if(beep_enable) {
