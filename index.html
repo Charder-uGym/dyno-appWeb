@@ -32,7 +32,7 @@ Message:
 
   <body>
     <script>
-      var versionStr="v0.2b";
+      var versionStr="v0.2c";
       var useLocalAPI=false;
     </script>
     <script src="js/jquery-3.5.0.min.js"></script>
@@ -477,7 +477,7 @@ Message:
           case "app_online":
               var online_info=JSON.parse(message.payloadString);   
               console.log(online_info);
-              MQTT最後上線時間=online_info;
+              MQTT最後連線時間=online_info;
               app_status.mqttOnline=true;
               $("#mqtt_status").text("已連線");               
               $("#mqtt_status").css("background-color", "green");  
