@@ -47,10 +47,10 @@ Message:
     <img id="spkr_icon" onclick="location.reload()" src="refresh.png" style="width:30px; float:right; margin-right:10px; margin-top:23px">          
            
     <div id="settings" style="float:right; background-color:white; border-radius:10px; margin-top:50px; margin-right:-120px; padding: 10px; display:none; z-index:2">
-        <p style="font-family:sans-serif; font-size:14px">藍芽連線裝置:</p>
-        <input id="bleAddr_input" style="width:130px; font-size:14px; padding:5px; margin-top:5px" placeholder="XX:XX:XX:XX:XX:XX">
+        <p style="font-family:sans-serif; font-size:14px">連線控制盒:</p>
+        <input id="controller_name_input" style="width:130px; font-size:14px; padding:5px; margin-top:5px" placeholder="">
         <br><br>
-        <button onclick="設定bleAddr()" style="padding:5px; border-radius:5px;; color:white; background-color:red; border:none; font-size:14px; margin-left:10px; margin-top:-5px" >
+        <button onclick="設定controller_name()" style="padding:5px; border-radius:5px;; color:white; background-color:red; border:none; font-size:14px; margin-left:10px; margin-top:-5px" >
           確定
         </button>
         <button onclick="取消設定()" style="padding:5px; border-radius:5px;; color:white; background-color:lightgray
@@ -75,12 +75,12 @@ Message:
           請聯絡管理人員了解如何加入 LINE 群組
         </div>
         <div style="text-align:left; margin-left:10px; margin-top:20px; font-size:16px">
-          <div>握力控制盒位址: </div>   
-          <label id="bleaddr_status" style="float:right; margin-top:-25px; margin-right:0px; background-color:red; color:white; border-radius:5px; padding:5px; font-size:14px">
+          <div>控制盒名稱: </div>   
+          <label id="controller_status" style="float:right; margin-top:-25px; margin-right:0px; background-color:red; color:white; border-radius:5px; padding:5px; font-size:14px; ">
             未設定
           </label><br>
           
-          <div>握力控制盒連線: </div> 
+          <div>控制盒連線: </div> 
           <label id="dyno_status" style="float:right; margin-top:-25px; margin-right:0px; background-color:red; color:white; border-radius:5px; padding:5px; font-size:14px">
             未連線
           </label><br>
@@ -119,13 +119,13 @@ Message:
        
     <div id="request" class="content" style="text-align:center; font-size:24px; font-family: Arial, Helvetica, sans-serif; display:none; align-items:center; display:none">
 
-      <img id="user_pic" src="./user_blank.png" style="width:300; height:300px; border-radius:50%" onerror="this.src='./user_blank.png';"/><br><br>
+      <img id="user_pic" src="./user_blank.png" style="width:200px; height:200px; border-radius:50%; margin-top:-50px" onerror="this.src='./user_blank.png';"/><br><br>
       
       <label id="user_name" ></label><br>
       <label id="user_phone"></label><br>
       <br><br>
       
-      <button onclick="開始量測()" style="padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+      <button onclick="開始量測()" style="padding:10px; border-radius:10px; color:white; background-color:red; border:none; font-size:24px; margin-top:-20px" >
         開始量測
       </button>
       <br><br>
@@ -136,11 +136,11 @@ Message:
     </div>      
           
     <div id="measureRight" class="content" style="margin-top:-120px; display:none">
-      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:200px; text-align:center">      
-        <div style="font-size:24px; font-weight:bold">
-          右手握力數值
+      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:100px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold; font-family:Ariel, monospace;">
+          右手握力數值(kg)
         </div><br>
-        <div id="measureRightHand" style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">0.0 kg<span style="font-family:Helvetica; font-weight:normal; font-size:40px"></span></div><br><br>
+        <div id="measureRightHand" style="font-size: 56px; background-color:antiquewhite; width:200px; margin-left:25px; border-radius: 20px; padding:10px; font-family:Ariel, monospace; font-weight:bold">000.0</div><br><br>
         
         <div style="font-size:24px; font-weight:bold">滿意數值後，改用</div>
         
@@ -154,11 +154,11 @@ Message:
         
       </div>
 
-      <div style="height:90%; float:left; width:26%;; margin-top:50px">      
-        <div style="margin-left:5%; font-size:24px; font-weight:bold">
+      <div style="height:90%; float:left; width:300px;; margin-top:20px">      
+        <div style="margin-left:5%; font-size:18px; font-weight:bold">
           請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊 右手握力數值 欄。可重複量測，
         </div><br>
-        <img src="MeasureRightHand.png" style="width:400px; margin-left:5%">
+        <img src="MeasureRightHand.png" style="width:300px; margin-left:5%">
         
       </div>  
     </div>        
@@ -206,32 +206,32 @@ Message:
        
     <script>
       var app_status={
-        "bleAddrSet": true,
+        "controller_nameSet": false,
         "internetOnline": false,
         "mqttOnline": false,
         "dynoOnline": false
       };
     
-      // read ble address
-      var bleAddr=localStorage.getItem('bleAddr');
-      console.log(bleAddr);
-      if (bleAddr==null){
+      // read controller name
+      var controller_name=localStorage.getItem('controller_name');
+      console.log(controller_name);
+      if (controller_name==null){
         $("#msgDialog").show();
-        app_status.bleAddrSet=false;
-        $("#bleaddr_status").text("未設定");
+        app_status.controller_nameSet=false;
+        $("#controller_status").text("未設定");
       } else {
-        app_status.bleAddrSet=true;
-        $("#bleAddr_input").val(bleAddr);
+        app_status.controller_nameSet=true;
+        $("#controller_name_input").val(controller_name);
         
-        $("#bleaddr_status").text(bleAddr);        
-        $("#bleaddr_status").css("color", "black");        
-        $("#bleaddr_status").css("background-color", "transparent");        
+        $("#controller_status").text(controller_name);        
+        $("#controller_status").css("color", "black");        
+        $("#controller_status").css("background-color", "transparent");        
       }
       
       //check internet online
       checkInternet();
       
-      var current_state=-3;//-3:MQTT未連線
+      var current_state=0;//-3:MQTT未連線
                            //-2:網路未連線
                            //-1:藍芽裝置未上線
                            // 0:intro;
@@ -265,7 +265,7 @@ Message:
       
       function set_settings(){
 
-        $("#bleAddr_input").val(bleAddr); 
+        $("#controller_name_input").val(controller_name); 
         
         $("#msgDialog").hide();
         $("#settings").show();
@@ -273,7 +273,23 @@ Message:
         
       }
       
-      function 要求量測(user_info) {    
+      function 要求量測(user_info) {  
+        
+        if (!app_status.internetOnline) {
+          alert("請檢查網際網路連線!");
+          return;
+        }
+        
+        if (!app_status.mqttOnline) {
+          alert("資料庫未連線，請洽管理員!");
+          return;
+        }        
+        
+        if (!app_status.dynoOnline) {
+          alert("控制盒尚未連線，請打開控制盒!");
+          return;
+        }        
+          
         $("#gear_icon").hide();
         
         current_state=1;
@@ -339,11 +355,11 @@ Message:
         
         $("#檢查連線按鈕").hide();
         
-        if ($("#bleAddr_input").val() !=""){
-          mqtt_client.subscribe($("#bleAddr_input").val()+"/#"); //模擬 mac address
+        if ($("#controller_name_input").val() !=""){
+          mqtt_client.subscribe($("#controller_name_input").val()+"/#"); 
           publish_state();
         } else {
-          console.log("BLE ADDR is not valid");
+          console.log("控制盒名稱不得為空白");
         }
       }
 
@@ -433,7 +449,7 @@ Message:
         console.log(current_state);
         if (app_status.mqttOnline){
           message = new Paho.MQTT.Message('{"status":"'+states[current_state]+'", "time_stamp":"'+Date.now().toString()+'"}');
-          message.destinationName = bleAddr+"/status"; //"00:11:22:33:44:55/status";
+          message.destinationName = controller_name+"/status"; //"Orange0001/status";
           message.qos=0; //不見得要 1, 0 應該也可以
           mqtt_client.send(message);
         }
@@ -449,7 +465,7 @@ Message:
           console.log(                    '{"RightHand":"'+$("#measureRightHand").text()+
                                           '","LeftHand":"' +$("#measureLeftHand").text()+ '","time_stamp":"'+Date.now().toString()+'"}');
           
-          message.destinationName = bleAddr+"/upload"; //"00:11:22:33:44:55/status";
+          message.destinationName = controller_name+"/upload"; //"00:11:22:33:44:55/status";
           message.qos=0; //不見得要 1, 0 應該也可以
           await mqtt_client.send(message);
           alert("資料上傳成功");
@@ -493,18 +509,25 @@ Message:
         location.reload(); //reset
       }
 
-      function 設定bleAddr(){
-        var bleAddrInput=$("#bleAddr_input").val();
-        console.log(bleAddrInput);
+      function 設定controller_name(){
+        var controller_nameInput=$("#controller_name_input").val();
+        console.log(controller_nameInput);
         
-        var mac_addr_reg= new RegExp(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/);
-
-        if ((bleAddrInput=="") || !(mac_addr_reg.test(bleAddrInput))) {
-          alert("不得為空白 或 格式不對，請重新輸入");
+        if (controller_nameInput=="") {
+          alert("不得為空白，請重新輸入");
         } else {
-          localStorage.setItem('bleAddr', bleAddrInput);
+          localStorage.setItem('controller_name', controller_nameInput);
           location.reload();
-        }
+        }        
+        
+//        var mac_addr_reg= new RegExp(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/);
+//
+//        if ((controller_nameInput=="") || !(mac_addr_reg.test(controller_nameInput))) {
+//          alert("不得為空白 或 格式不對，請重新輸入");
+//        } else {
+//          localStorage.setItem('controller_name', controller_nameInput);
+//          location.reload();
+//        }
       }
       
       function 取消設定(){
@@ -514,11 +537,11 @@ Message:
       function process_dyno_data(dyna_data){
         flash_reading();
         if (current_state==2) {
-          $("#measureRightHand").text(dyna_data.value+" kg");
-          $("#measureRightHand2").text(dyna_data.value+" kg");
+          $("#measureRightHand").text(dyna_data.value);
+          $("#measureRightHand2").text(dyna_data.value);
         }
         else if (current_state==3)
-          $("#measureLeftHand").text(dyna_data.value+" kg");
+          $("#measureLeftHand").text(dyna_data.value);
       };
             
       function beep() {
