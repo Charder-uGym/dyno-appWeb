@@ -270,8 +270,8 @@ Message:
       // connect the mqtt_client
       mqtt_client.connect(options);    
       
-      var 控制盒最後上線時間;
-      var MQTT最後連線時間;
+      var 控制盒最後上線時間=Date.now();
+      var MQTT最後連線時間=Date.now();
       setInterval( ()=>{
         if (current_state==0) {          
           publish_state();
@@ -302,7 +302,7 @@ Message:
         }        
         
         
-      }, 5000);         
+      }, 9000);         
       
       function set_settings(){
 
@@ -437,7 +437,7 @@ Message:
         switch(cmd_status) {
           case "dyno_online":
               var online_info=JSON.parse(message.payloadString);
-              console.log(online_info);    
+              //console.log(online_info);    
               控制盒最後上線時間=online_info;
               app_status.dynoOnline=true;
               $("#dyno_status").text("已連線");               
