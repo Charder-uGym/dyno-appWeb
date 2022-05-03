@@ -275,8 +275,10 @@ Message:
       setInterval( ()=>{
         if (current_state==0) {          
           publish_state();
-        }
-        
+        }        
+      }, 5000); 
+      
+      setInterval( ()=>{      
         if (Date.now()-MQTT最後連線時間>10000){
           console.log("MQTT timeout");
           app_status.mqttOnline=false;
@@ -290,19 +292,19 @@ Message:
         }
         
         if (Date.now()-控制盒最後上線時間>10000){
-          console.log("控制盒 timeout");
+          console.log("控制盒 offline");
           app_status.dynoOnline=false;
           $("#dyno_status").text("未連線");               
           $("#dyno_status").css("background-color", "red");            
         } else {
-          console.log("Dyno is online");
+          console.log("控制盒 online");
           app_status.dynoOOnline=true;
           $("#dyno_status").text("已連線");               
           $("#dyno_status").css("background-color", "green");            
         }        
         
         
-      }, 9000);         
+      }, 10000);         
       
       function set_settings(){
 
