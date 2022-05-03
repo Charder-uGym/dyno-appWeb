@@ -99,7 +99,7 @@ Message:
             未連線
           </label><br>
           
-          <button id="檢查連線按鈕" onclick="檢查連線()" style="font-size:20px; float:right; margin-right:20px; background-color:red; color:white; border-radius:5px; padding:5px; border:none; display:none">
+          <button id="檢查連線按鈕" onclick="檢查連線()" style="font-size:20px; float:right; margin-right:0px; background-color:red; color:white; border-radius:5px; padding:5px; border:none; display:none">
             檢查連線
           </button>             
         </div>    
@@ -251,8 +251,7 @@ Message:
 
 
       var beep_enable=false;      
-      var states=['idle', '要求量測','右手量測','左手量測', '藍芽斷線'];
-      //setInterval( ()=>{publish_state();}, 5000);      
+      var states=['idle', '要求量測','右手量測','左手量測', '藍芽斷線'];   
       
       //"3a8.....cloud" 要改為從 Firebase 取得 
       var mqtt_client = new Paho.MQTT.Client("3a8247b564f04a0a81e7e1d070882e1e.s1.eu.hivemq.cloud", 8884, "web_" + parseInt(Math.random() * 100, 10));
@@ -269,7 +268,41 @@ Message:
       }
 
       // connect the mqtt_client
-      mqtt_client.connect(options);      
+      mqtt_client.connect(options);    
+      
+      var 控制盒最後上線時間;
+      var MQTT最後連線時間;
+      setInterval( ()=>{
+        if (current_state==0) {          
+          publish_state();
+        }
+        
+        if (Date.now()-MQTT最後連線時間>10000){
+          console.log("MQTT timeout");
+          app_status.mqttOnline=false;
+          $("#mqtt_status").text("未連線");               
+          $("#mqtt_status").css("background-color", "red");            
+        } else {
+          console.log("MQTT is connected");
+          app_status.mqttOnline=true;
+          $("#mqtt_status").text("已連線");               
+          $("#mqtt_status").css("background-color", "green");            
+        }
+        
+        if (Date.now()-控制盒最後上線時間>10000){
+          console.log("控制盒 timeout");
+          app_status.dynoOnline=false;
+          $("#dyno_status").text("未連線");               
+          $("#dyno_status").css("background-color", "red");            
+        } else {
+          console.log("Dyno is online");
+          app_status.dynoOOnline=true;
+          $("#dyno_status").text("已連線");               
+          $("#dyno_status").css("background-color", "green");            
+        }        
+        
+        
+      }, 5000);         
       
       function set_settings(){
 
@@ -395,7 +428,7 @@ Message:
 
       // called when a message arrives
       function onMessageArrived(message) {
-        console.log("onMessageArrived:");
+        //console.log("onMessageArrived:");
         
         var topic=message.destinationName.split('/');
         var sn         = topic[0];
@@ -404,7 +437,8 @@ Message:
         switch(cmd_status) {
           case "dyno_online":
               var online_info=JSON.parse(message.payloadString);
-              console.log(online_info);                            
+              console.log(online_info);    
+              控制盒最後上線時間=online_info;
               app_status.dynoOnline=true;
               $("#dyno_status").text("已連線");               
               $("#dyno_status").css("background-color", "green");  
@@ -439,7 +473,13 @@ Message:
               console.log(dyna_data);
               //dyna_data.measurement string 代表 握力器 傳來的測量值
               process_dyno_data(dyna_data);
-              break;            
+              break;  
+          case "status":
+              var status_data=JSON.parse(message.payloadString); 
+              if (status_data.status=="idle"){
+                MQTT最後連線時間=status_data.time_stamp;
+              }
+              break;
           default:
             console.log("cmd/status:", cmd_status);
             var cmd_status_data=JSON.parse(message.payloadString);
@@ -458,7 +498,7 @@ Message:
       
       function publish_state(){
         var message; 
-        console.log(current_state);
+        //console.log(current_state);
         if (app_status.mqttOnline){
           message = new Paho.MQTT.Message('{"status":"'+states[current_state]+'", "time_stamp":"'+Date.now().toString()+'"}');
           message.destinationName = controller_name+"/status"; //"Orange0001/status";
