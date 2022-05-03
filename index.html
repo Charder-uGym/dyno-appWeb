@@ -136,11 +136,11 @@ Message:
     </div>      
           
     <div id="measureRight" class="content" style="margin-top:-120px; display:none">
-      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:100px; text-align:center">      
-        <div style="font-size:24px; font-weight:bold; font-family:Ariel, monospace;">
+      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:0px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold; font-family:Ariel, monospace; margin-top:120px">
           右手握力數值(kg)
         </div><br>
-        <div id="measureRightHand" style="font-size: 56px; background-color:antiquewhite; width:200px; margin-left:25px; border-radius: 20px; padding:10px; font-family:Ariel, monospace; font-weight:bold">000.0</div><br><br>
+        <div id="measureRightHand" style="font-size: 56px; background-color:antiquewhite; width:200px; margin-left:25px; border-radius: 20px; padding:10px; font-family:Ariel, monospace; font-weight:bold; margin-top:-15px">000.0</div><br><br>
         
         <div style="font-size:24px; font-weight:bold">滿意數值後，改用</div>
         
@@ -154,9 +154,9 @@ Message:
         
       </div>
 
-      <div style="height:90%; float:left; width:300px;; margin-top:20px">      
+      <div style="height:90%; float:left; width:270px;; margin-top:20px">      
         <div style="margin-left:5%; font-size:18px; font-weight:bold">
-          請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊 右手握力數值 欄。可重複量測，
+          請量測右手握力，用力按壓後，放開後會嗶一聲，握力值會顯示在左邊的 右手握力數值 欄。<br>可重複量測，
         </div><br>
         <img src="MeasureRightHand.png" style="width:300px; margin-left:5%">
         
@@ -164,42 +164,43 @@ Message:
     </div>        
          
     <div id="measureLeft" class="content" style="margin-top:-120px; display:none">
-      <div style="height:90%; float:left; width:26%; margin-left:24%; margin-top:85px">      
-        <div style="font-size:24px; font-weight:bold">
-          請量測左手握力，用力按壓後，&nbsp 放開後會嗶一聲，握力值會顯示在右邊 左手握力數值 欄。可重複量測，
+      <div style="height:90%; float:left; width:270px; margin-left:24%; margin-top:20px">      
+        <div style="font-size:18px; font-weight:bold">
+          請量測左手握力，用力按壓後，&nbsp 放開後會嗶一聲，握力值會顯示在右邊 左手握力數值 欄。<br>可重複量測，
         </div><br>
-        <img src="MeasureLeftHand.png" style="width:400px;">
+        <img src="MeasureLeftHand.png" style="width:300px;">
       </div>
 
-      <div style="height:90%; float:left; width:26%; margin-left:%; margin-top:50px; text-align:center">      
-        <div style="font-size:24px; font-weight:bold">
-          已量得右手握力數值
+      <div style="height:90%; float:left; width:300px; margin-left:%; margin-top:10px; text-align:center">      
+        <div style="font-size:24px; font-weight:bold;font-family:Ariel, monospace; margin-left: 30px; width:300px">
+          已量得右手握力數值(kg)
         </div><br>
-        <div id="measureRightHand2" style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">0.0 kg<span style="font-family:Helvetica; font-weight:normal; font-size:40px"></span></div><br><br>
+        <div id="measureRightHand2" style="font-size: 56px; width:200px; margin-left:70px;font-family:Ariel, monospace; font-weight:bold; margin-top:-20px">000.0</div><br><br>
         
-        <div style="font-size:24px; font-weight:bold">
-          左手握力數值
+        <div style="font-size:24px; font-weight:bold;font-family:Ariel, monospace; margin-top:-25px; margin-left:20px">
+          左手握力數值(kg)
         </div><br>
-        <div id="measureLeftHand" style="font-size: 50px; background-color:antiquewhite; width:60%; margin-left:20%; border-radius: 20px; padding:20px; font-family:Ariel, monospace; font-weight:bold">0.0 kg<span style="font-family:Helvetica; font-weight:normal; font-size:40px"></span></div><br><br>        
+        <div id="measureLeftHand" style="font-size: 56px; background-color:antiquewhite; width:200px; margin-left:20%; border-radius: 20px; padding:10px; font-family:Ariel, monospace; font-weight:bold; margin-top:-15px">000.0</div><br><br>        
         
-        <div style="font-size:24px; font-weight:bold">滿意數值後</div>
-                
-        <button onclick="publish_upload()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
-          上傳量測數值
-        </button>
-        <br><br><br>
-        
-        <div style="font-size:24px; font-weight:bold">或是</div>
-        
-        <button onclick="開始量測()" style="margin-top:20px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
-          重新量測
-        </button>
-          
-        <span style="font-size:24px; font-weight:bold; margin-left:20px; margin-right:20px">或</span>                      
-        <button onclick="取消量測()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray; border:none; font-size:24px" >
-          放棄量測
-        </button>  
-                                                      
+        <div style="margin-left:-30px; width:400px">
+          <div style="font-size:24px; font-weight:bold">滿意數值後</div>
+
+          <button onclick="publish_upload()" style="margin-top:10px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px" >
+            上傳量測數值
+          </button>
+          <br><br><br>
+
+          <div style="font-size:24px; font-weight:bold">也可以</div>
+
+          <button onclick="開始量測()" style="margin-top:10px; padding:10px; border-radius:10px;; color:white; background-color:red; border:none; font-size:24px; margin-left:-5x" >
+            重新量測
+          </button>
+
+          <span style="font-size:24px; font-weight:bold; margin-left:5px; margin-right:5px">或</span>                      
+          <button onclick="取消量測()" style="padding:10px; border-radius:10px;; color:white; background-color:lightgray; border:none; font-size:24px" >
+            放棄量測
+          </button>  
+        </div>                                              
       </div>  
     </div>                     
        
