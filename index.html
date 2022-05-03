@@ -32,7 +32,7 @@ Message:
 
   <body>
     <script>
-      var versionStr="v0.2";
+      var versionStr="v0.2b";
       var useLocalAPI=false;
     </script>
     <script src="js/jquery-3.5.0.min.js"></script>
@@ -272,10 +272,8 @@ Message:
       
       var 控制盒最後上線時間=Date.now();
       var MQTT最後連線時間=Date.now();
-      setInterval( ()=>{
-        if (current_state==0) {          
-          publish_state();
-        }        
+      setInterval( ()=>{        
+        publish_app_online();              
       }, 5000); 
       
       setInterval( ()=>{      
@@ -404,7 +402,7 @@ Message:
         
         if ($("#controller_name_input").val() !=""){
           mqtt_client.subscribe($("#controller_name_input").val()+"/#"); 
-          publish_state();
+          publish_app_online();
         } else {
           console.log("控制盒名稱不得為空白");
         }
@@ -476,11 +474,13 @@ Message:
               //dyna_data.measurement string 代表 握力器 傳來的測量值
               process_dyno_data(dyna_data);
               break;  
-          case "status":
-              var status_data=JSON.parse(message.payloadString); 
-              if (status_data.status=="idle"){
-                MQTT最後連線時間=status_data.time_stamp;
-              }
+          case "app_online":
+              var online_info=JSON.parse(message.payloadString);   
+              console.log(online_info);
+              MQTT最後上線時間=online_info;
+              app_status.mqttOnline=true;
+              $("#mqtt_status").text("已連線");               
+              $("#mqtt_status").css("background-color", "green");  
               break;
           default:
             console.log("cmd/status:", cmd_status);
@@ -496,6 +496,15 @@ Message:
 //        }
         
 
+      }
+      
+      
+      function publish_app_online(){
+        var message; 
+          message = new Paho.MQTT.Message(Date.now().toString());
+          message.destinationName = controller_name+"/app_online"; //"Orange0001/app_online";
+          message.qos=0; //不見得要 1, 0 應該也可以
+          mqtt_client.send(message);
       }
       
       function publish_state(){
@@ -519,7 +528,7 @@ Message:
           console.log(                    '{"RightHand":"'+$("#measureRightHand").text()+
                                           '","LeftHand":"' +$("#measureLeftHand").text()+ '","time_stamp":"'+Date.now().toString()+'"}');
           
-          message.destinationName = controller_name+"/upload"; //"00:11:22:33:44:55/status";
+          message.destinationName = controller_name+"/upload"; ;
           message.qos=0; //不見得要 1, 0 應該也可以
           await mqtt_client.send(message);
           alert("資料上傳成功");
